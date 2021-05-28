@@ -1,12 +1,23 @@
 import { LoginDto } from './models/login.dto';
 import { RegisterDto } from './models/register.dto';
-import { BadRequestException, Body, Controller, Post } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Post,
+  Res,
+} from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import * as bcrypt from 'bcryptjs';
+import { JwtService } from '@nestjs/jwt';
+import { Response } from 'express';
 
 @Controller()
 export class AuthController {
-  constructor(private userService: UserService) {}
+  constructor(
+    private userService: UserService,
+    private jwtService: JwtService,
+  ) {}
 
   @Post('register')
   async register(@Body() body: RegisterDto) {
@@ -23,7 +34,10 @@ export class AuthController {
   }
 
   @Post('login')
-  async login(@Body() body: LoginDto) {
+  async login(
+    @Body() body: LoginDto,
+    @Res({ passthrough: true }) response: Response,
+  ) {
     const user = await this.userService.findOne({ email: body.email });
 
     if (!user) {
@@ -35,6 +49,11 @@ export class AuthController {
     }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...result } = user;
+
+    const jwt = await this.jwtService.signAsync(result);
+
+    response.cookie('jwt', jwt, { httpOnly: true });
+
     return result;
   }
 }
