@@ -1,5 +1,15 @@
+import { UserUpdateDto } from './models/user-update.dto';
 import { AuthGuard } from './../auth/auth.guard';
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  UseGuards,
+} from '@nestjs/common';
 import { User } from './models/user.entity';
 import { UserService } from './user.service';
 import * as bcrypt from 'bcryptjs';
@@ -25,5 +35,17 @@ export class UserController {
   @Get(':id')
   async get(@Param('id') id: string) {
     return this.userService.findOne({ id });
+  }
+
+  @Put(':id')
+  async update(@Param('id') id: string, @Body() body: UserUpdateDto) {
+    await this.userService.update(id, body);
+
+    return this.userService.findOne({ id });
+  }
+
+  @Delete(':id')
+  async delete(@Param('id') id: string) {
+    return this.userService.delete(id);
   }
 }
