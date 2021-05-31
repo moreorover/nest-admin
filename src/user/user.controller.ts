@@ -2,6 +2,7 @@ import { PaginatedResult } from './../common/models/paginated-result';
 import { UserUpdateDto } from './models/user-update.dto';
 import { AuthGuard } from './../auth/auth.guard';
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -10,17 +11,23 @@ import {
   Post,
   Put,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { User } from './models/user.entity';
 import { UserService } from './user.service';
 import * as bcrypt from 'bcryptjs';
 import { UserCreateDto } from './models/user-create.dto';
+import { AuthService } from '../auth/auth.service';
+import { Request } from 'express';
 
 @UseGuards(AuthGuard)
 @Controller('users')
 export class UserController {
-  constructor(private userService: UserService) {}
+  constructor(
+    private userService: UserService,
+    private authService: AuthService,
+  ) {}
 
   @Get()
   async all(@Query('page') page = 1): Promise<PaginatedResult> {
@@ -43,6 +50,28 @@ export class UserController {
   @Get(':id')
   async get(@Param('id') id: string) {
     return this.userService.findOne({ id }, ['role']);
+  }
+
+  @Put('info')
+  async updateInfo(@Req() request: Request, @Body() body: UserUpdateDto) {
+    const id = await this.authService.userId(request);
+    await this.userService.update(id, body);
+    return this.userService.findOne({ id });
+  }
+
+  @Put('password')
+  async updatePassword(
+    @Req() request: Request,
+    @Body('password') password: string,
+    @Body('password_confirm') password_confirm: string,
+  ) {
+    if (password !== password_confirm) {
+      throw new BadRequestException('Passwords do not match!');
+    }
+    const id = await this.authService.userId(request);
+    const pass = await bcrypt.hash(password, 12);
+    await this.userService.update(id, { password: pass });
+    return this.userService.findOne({ id });
   }
 
   @Put(':id')

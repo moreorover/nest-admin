@@ -1,3 +1,4 @@
+import { AuthService } from './auth.service';
 import { AuthGuard } from './auth.guard';
 import { LoginDto } from './models/login.dto';
 import { RegisterDto } from './models/register.dto';
@@ -10,17 +11,21 @@ import {
   Res,
   Req,
   UseGuards,
+  ClassSerializerInterceptor,
+  UseInterceptors,
 } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 import { Response, Request } from 'express';
 
+@UseInterceptors(ClassSerializerInterceptor)
 @Controller()
 export class AuthController {
   constructor(
     private userService: UserService,
     private jwtService: JwtService,
+    private authService: AuthService,
   ) {}
 
   @Post('register')
@@ -65,11 +70,9 @@ export class AuthController {
   @UseGuards(AuthGuard)
   @Get('user')
   async user(@Req() request: Request) {
-    const cookie = request.cookies['jwt'];
+    const id = await this.authService.userId(request);
 
-    const data = await this.jwtService.verifyAsync(cookie);
-
-    return data;
+    return this.userService.findOne({ id });
   }
 
   @UseGuards(AuthGuard)
