@@ -8,6 +8,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { User } from './models/user.entity';
@@ -20,9 +21,14 @@ import { UserCreateDto } from './models/user-create.dto';
 export class UserController {
   constructor(private userService: UserService) {}
 
+  // @Get()
+  // async all(): Promise<User[]> {
+  //   return this.userService.all();
+  // }
+
   @Get()
-  async all(): Promise<User[]> {
-    return this.userService.all();
+  async all(@Query('page') page = 1): Promise<User[]> {
+    return this.userService.paginate(page);
   }
 
   @Post()
