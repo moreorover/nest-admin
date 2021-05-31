@@ -18,8 +18,14 @@ export class RoleController {
   }
 
   @Post()
-  async create(@Body('name') name: string) {
-    return this.roleService.create({ name });
+  async create(
+    @Body('name') name: string,
+    @Body('permissions') permissions: number[],
+  ) {
+    return this.roleService.create({
+      name,
+      permissions: permissions.map((id) => ({ id })),
+    });
   }
 
   @Get(':id')
@@ -28,10 +34,19 @@ export class RoleController {
   }
 
   @Put(':id')
-  async update(@Param('id') id: string, @Body('name') name: string) {
+  async update(
+    @Param('id') id: string,
+    @Body('name') name: string,
+    @Body('permissions') permissions: number[],
+  ) {
     await this.roleService.update(id, { name });
 
-    return this.roleService.findOne({ id });
+    const role = await this.roleService.findOne({ id });
+
+    return this.roleService.create({
+      ...role,
+      permissions: permissions.map((id) => ({ id })),
+    });
   }
 
   @Delete(':id')
