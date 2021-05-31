@@ -1,3 +1,4 @@
+import { AuthGuard } from './auth.guard';
 import { LoginDto } from './models/login.dto';
 import { RegisterDto } from './models/register.dto';
 import {
@@ -8,6 +9,7 @@ import {
   Post,
   Res,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import * as bcrypt from 'bcryptjs';
@@ -32,11 +34,15 @@ export class AuthController {
       last_name: body.last_name,
       email: body.email,
       password: hashedPassword,
+      role: { id: 1 },
     });
   }
 
   @Post('login')
-  async login(@Body() body: LoginDto, @Res() response: Response) {
+  async login(
+    @Body() body: LoginDto,
+    @Res({ passthrough: true }) response: Response,
+  ) {
     const user = await this.userService.findOne({ email: body.email });
 
     if (!user) {
@@ -56,6 +62,7 @@ export class AuthController {
     return result;
   }
 
+  @UseGuards(AuthGuard)
   @Get('user')
   async user(@Req() request: Request) {
     const cookie = request.cookies['jwt'];
@@ -63,5 +70,12 @@ export class AuthController {
     const data = await this.jwtService.verifyAsync(cookie);
 
     return data;
+  }
+
+  @UseGuards(AuthGuard)
+  @Post('logout')
+  async logout(@Res({ passthrough: true }) response: Response) {
+    response.clearCookie('jwt');
+    return { message: 'Success' };
   }
 }
