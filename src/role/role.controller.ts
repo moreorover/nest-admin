@@ -30,7 +30,7 @@ export class RoleController {
 
   @Get(':id')
   async get(@Param('id') id: string) {
-    return this.roleService.findOne({ id });
+    return this.roleService.findOne({ id }, ['permissions']);
   }
 
   @Put(':id')

@@ -1,3 +1,4 @@
+import { PaginatedResult } from './../common/models/paginated-result';
 import { UserUpdateDto } from './models/user-update.dto';
 import { AuthGuard } from './../auth/auth.guard';
 import {
@@ -21,14 +22,9 @@ import { UserCreateDto } from './models/user-create.dto';
 export class UserController {
   constructor(private userService: UserService) {}
 
-  // @Get()
-  // async all(): Promise<User[]> {
-  //   return this.userService.all();
-  // }
-
   @Get()
-  async all(@Query('page') page = 1): Promise<User[]> {
-    return this.userService.paginate(page);
+  async all(@Query('page') page = 1): Promise<PaginatedResult> {
+    return this.userService.paginate(page, ['role']);
   }
 
   @Post()
@@ -46,7 +42,7 @@ export class UserController {
 
   @Get(':id')
   async get(@Param('id') id: string) {
-    return this.userService.findOne({ id });
+    return this.userService.findOne({ id }, ['role']);
   }
 
   @Put(':id')
