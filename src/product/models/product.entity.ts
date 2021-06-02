@@ -10,6 +10,6 @@ export class Product {
   description: string;
   @Column()
   image: string;
-  @Column()
+  @Column('float')
   price: number;
 }
