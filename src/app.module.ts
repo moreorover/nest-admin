@@ -1,7 +1,5 @@
 import { PermissionGuard } from './permission/permission.guard';
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
@@ -33,7 +31,11 @@ import { APP_GUARD } from '@nestjs/core';
     ProductModule,
     OrderModule,
   ],
-  controllers: [AppController],
-  providers: [{ provide: APP_GUARD, useClass: PermissionGuard }],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: PermissionGuard,
+    },
+  ],
 })
 export class AppModule {}
